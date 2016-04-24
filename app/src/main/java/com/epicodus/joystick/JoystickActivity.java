@@ -1,5 +1,6 @@
 package com.epicodus.joystick;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,7 +12,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class JoystickActivity extends AppCompatActivity {
+public class JoystickActivity extends Activity {
 
     GameView gameView;
 
@@ -79,17 +80,25 @@ public class JoystickActivity extends AppCompatActivity {
         }
 
         public void draw() {
+            //Make sure surface is valid, dont know what this means but program crashes if you don't
             if(ourHolder.getSurface().isValid()) {
+                //this locks the drawing surface, and sets the canvas equal to the drawing surface
                 canvas = ourHolder.lockCanvas();
-                canvas.drawColor(Color.argb(255, 26, 128, 182));
-                paint.setColor(Color.argb(255, 249, 129, 0));
+                //sets background color
+                canvas.drawColor(Color.argb(255, 0, 0, 0));
+                //sets paint color
+                paint.setColor(Color.argb(255, 255, 255, 255));
+                //draws circle
                 canvas.drawCircle(circleXPosition, circleYPosition, 100, paint);
+                //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
                 ourHolder.unlockCanvasAndPost(canvas);
             }
         }
 
         public void pause() {
+            //This function will shut down our thread if the game activity is paused or stopped. Better way to handle this might be to only run update function if playing = true, so that the game data is not destroyed.
             playing = false;
+            //try-catch statement is required because of the nature of the Thread class
             try {
                 gameThread.join();
             } catch(InterruptedException e) {
@@ -98,6 +107,7 @@ public class JoystickActivity extends AppCompatActivity {
         }
 
         public void resume() {
+            //this function will initialize a new thread when the game is started
             playing = true;
             gameThread = new Thread(this);
             gameThread.start();
@@ -107,15 +117,18 @@ public class JoystickActivity extends AppCompatActivity {
         public boolean onTouchEvent(MotionEvent motionEvent) {
             switch(motionEvent.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
+                    //when the user touches the screen at first, isBeingTouched gets set to true so the circle position knows to track to the location to the users finger. Also, the pointerXPosition and pointerYPosition variables are set to the x and y location of the users finger, which conveniently uses the same set of coordinates as the canvas apparently
                     isBeingTouched = true;
                     pointerXPosition = motionEvent.getX();
                     pointerYPosition = motionEvent.getY();
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    //whenever the user moves their finger, and pointerX and pointerY position variables are updated to reflect this
                     pointerXPosition = motionEvent.getX();
                     pointerYPosition = motionEvent.getY();
                     break;
                 case MotionEvent.ACTION_UP:
+                    //when the user removes his finger, isBeingTouched is set to false, and the update function defaults to setting the circle and pointer positions to the center of the screen
                     isBeingTouched = false;
                     break;
             }
@@ -123,6 +136,7 @@ public class JoystickActivity extends AppCompatActivity {
         }
     }
 
+    //These methods override the default methods which are called by the operating system, calling our own pause and resume methods instead. We do this because closing a thread is handled differently than closing a static activity
     @Override
     protected void onResume() {
         super.onResume();
