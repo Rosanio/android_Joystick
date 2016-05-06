@@ -35,10 +35,14 @@ public class JoystickActivity extends Activity {
         Paint paint;
         long fps;
         private long timeThisFrame;
-        float circleXPosition;
-        float circleYPosition;
-        float pointerXPosition;
-        float pointerYPosition;
+        double circleXPosition;
+        double circleYPosition;
+        double pointerXPosition;
+        double pointerYPosition;
+        double deltaX;
+        double deltaY;
+        double distance;
+        double theta;
         boolean isBeingTouched = false;
 
         public GameView(Context context) {
@@ -69,8 +73,14 @@ public class JoystickActivity extends Activity {
             circleXPosition = this.getWidth()/2;
             circleYPosition = this.getHeight()/2;
             if(isBeingTouched) {
-                circleXPosition = pointerXPosition;
-                circleYPosition = pointerYPosition;
+                deltaX = pointerXPosition-this.getWidth()/2;
+                deltaY = pointerYPosition - this.getHeight()/2;
+                distance = Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
+                Log.d("distance", distance+"");
+                if(distance <= 100) {
+                    circleXPosition = pointerXPosition;
+                    circleYPosition = pointerYPosition;
+                }
             } else {
                 circleXPosition = this.getWidth()/2;
                 circleYPosition = this.getHeight()/2;
@@ -87,9 +97,13 @@ public class JoystickActivity extends Activity {
                 //sets background color
                 canvas.drawColor(Color.argb(255, 0, 0, 0));
                 //sets paint color
-                paint.setColor(Color.argb(255, 255, 255, 255));
+                paint.setColor(Color.argb(255,153,153,153));
                 //draws circle
-                canvas.drawCircle(circleXPosition, circleYPosition, 100, paint);
+                canvas.drawCircle(this.getWidth()/2, this.getHeight()/2, 100, paint);
+                //updates paint color
+                paint.setColor(Color.argb(255, 255, 255, 255));
+                //draws other circle
+                canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
                 //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
                 ourHolder.unlockCanvasAndPost(canvas);
             }
