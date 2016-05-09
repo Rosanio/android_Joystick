@@ -5,9 +5,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -19,8 +21,10 @@ public class JoystickActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        gameView = new GameView(this);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        gameView = new GameView(this, size.x, size.y);
         setContentView(gameView);
     }
 
@@ -39,18 +43,30 @@ public class JoystickActivity extends Activity {
         double circleYPosition;
         double pointerXPosition;
         double pointerYPosition;
+        float rectXPosition = this.getWidth()/2;
+        float rectYPosition = this.getHeight()/4;
+        float rectWidth;
+        float rectHeight;
         double deltaX;
         double deltaY;
         double distance;
         double theta;
         boolean isBeingTouched = false;
+        float screenX;
+        float screenY;
 
-        public GameView(Context context) {
+        public GameView(Context context, float x, float y) {
             //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
             super(context);
             //initialize ourHolder and paint
             ourHolder = getHolder();
             paint = new Paint();
+            screenX = x;
+            screenY = y;
+            rectXPosition = screenX/2;
+            rectYPosition = screenY/4;
+            rectWidth = 25;
+            rectHeight = 25;
         }
 
         @Override
@@ -77,7 +93,7 @@ public class JoystickActivity extends Activity {
                 deltaY = pointerYPosition - this.getHeight()/2;
                 distance = Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
                 theta = Math.atan2(deltaY,deltaX);
-                Log.d("theta", theta+"");
+                Log.d("rectX", rectXPosition+"");
                 if(distance <= 100) {
                     circleXPosition = pointerXPosition;
                     circleYPosition = pointerYPosition;
@@ -86,8 +102,6 @@ public class JoystickActivity extends Activity {
                     circleYPosition = this.getHeight()/2 + 100*Math.sin(theta);
                 }
             } else {
-                circleXPosition = this.getWidth()/2;
-                circleYPosition = this.getHeight()/2;
                 pointerXPosition = this.getWidth()/2;
                 pointerYPosition = this.getHeight()/2;
             }
@@ -108,6 +122,8 @@ public class JoystickActivity extends Activity {
                 paint.setColor(Color.argb(255, 255, 255, 255));
                 //draws other circle
                 canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
+                //draw rectangle
+                canvas.drawRect(rectXPosition + rectWidth/2, rectYPosition - rectHeight/2, rectXPosition - rectWidth/2, rectYPosition + rectHeight/2, paint);
                 //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
                 ourHolder.unlockCanvasAndPost(canvas);
             }
