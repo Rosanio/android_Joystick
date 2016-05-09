@@ -76,10 +76,14 @@ public class JoystickActivity extends Activity {
                 deltaX = pointerXPosition-this.getWidth()/2;
                 deltaY = pointerYPosition - this.getHeight()/2;
                 distance = Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
-                Log.d("distance", distance+"");
+                theta = Math.atan2(deltaY,deltaX);
+                Log.d("theta", theta+"");
                 if(distance <= 100) {
                     circleXPosition = pointerXPosition;
                     circleYPosition = pointerYPosition;
+                } else {
+                    circleXPosition = this.getWidth()/2 + 100*Math.cos(theta);
+                    circleYPosition = this.getHeight()/2 + 100*Math.sin(theta);
                 }
             } else {
                 circleXPosition = this.getWidth()/2;
