@@ -39,18 +39,20 @@ public class JoystickActivity extends Activity {
         Paint paint;
         long fps;
         private long timeThisFrame;
-        double circleXPosition;
-        double circleYPosition;
-        double pointerXPosition;
-        double pointerYPosition;
+        float circleXPosition;
+        float circleYPosition;
+        float pointerXPosition;
+        float pointerYPosition;
         float rectXPosition = this.getWidth()/2;
         float rectYPosition = this.getHeight()/4;
         float rectWidth;
         float rectHeight;
-        double deltaX;
-        double deltaY;
-        double distance;
-        double theta;
+        float rectXVel;
+        float rectYVel;
+        float deltaX;
+        float deltaY;
+        float distance;
+        float theta;
         boolean isBeingTouched = false;
         float screenX;
         float screenY;
@@ -67,6 +69,8 @@ public class JoystickActivity extends Activity {
             rectYPosition = screenY/4;
             rectWidth = 25;
             rectHeight = 25;
+            rectXVel = 0;
+            rectYVel = 0;
         }
 
         @Override
@@ -91,16 +95,17 @@ public class JoystickActivity extends Activity {
             if(isBeingTouched) {
                 deltaX = pointerXPosition-this.getWidth()/2;
                 deltaY = pointerYPosition - this.getHeight()/2;
-                distance = Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
-                theta = Math.atan2(deltaY,deltaX);
+                distance = (float) Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
+                theta = (float) Math.atan2(deltaY,deltaX);
                 Log.d("rectX", rectXPosition+"");
                 if(distance <= 100) {
                     circleXPosition = pointerXPosition;
                     circleYPosition = pointerYPosition;
                 } else {
-                    circleXPosition = this.getWidth()/2 + 100*Math.cos(theta);
-                    circleYPosition = this.getHeight()/2 + 100*Math.sin(theta);
+                    circleXPosition = (float)(this.getWidth()/2 + 100*Math.cos(theta));
+                    circleYPosition = (float) (this.getHeight()/2 + 100*Math.sin(theta));
                 }
+                rectXVel = circleXPosition - this.getWidth()/2;
             } else {
                 pointerXPosition = this.getWidth()/2;
                 pointerYPosition = this.getHeight()/2;
