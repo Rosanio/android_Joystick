@@ -36,12 +36,6 @@ public class GameView extends SurfaceView implements Runnable {
     float circleYPosition;
     float pointerXPosition;
     float pointerYPosition;
-    float rectXPosition;
-    float rectYPosition;
-    float rectWidth;
-    float rectHeight;
-    float rectXVel;
-    float rectYVel;
     float deltaX;
     float deltaY;
     float distance;
@@ -64,8 +58,6 @@ public class GameView extends SurfaceView implements Runnable {
     Bitmap explosion12;
     int explosionFrame;
     Tornado tornado;
-    Building building;
-    boolean isExploding;
     ArrayList<Building> buildings = new ArrayList<>();
     boolean gameOver;
     long gameOverStart;
@@ -73,18 +65,14 @@ public class GameView extends SurfaceView implements Runnable {
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
         super(context);
-        //initialize ourHolder and paint
+        //initialize context, ourHolder, paint and screen size
         mContext = context;
         ourHolder = getHolder();
         paint = new Paint();
         screenX = x;
         screenY = y;
-        rectXPosition = (float)(screenX*0.9);
-        rectYPosition = screenY/4;
-        rectWidth = 25;
-        rectHeight = 25;
-        rectXVel = 0;
-        rectYVel = 0;
+
+        //setup bitmap files
 
         buildingBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.building);
         explosion1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion1);
@@ -102,14 +90,18 @@ public class GameView extends SurfaceView implements Runnable {
 
         explosionFrame = 1;
 
+        //initialize tornado and building objects
         tornado = new Tornado(context, screenX, screenY);
 
-        building = new Building(context, screenX, screenY, screenX/2, (float)(screenY*.15));
         buildings.add(new Building(context, screenX, screenY, (float)(screenX*.7), (float)(screenY*.15)));
         buildings.add(new Building(context, screenX, screenY, (float)(screenX/4), (float)(screenY*.15)));
-        buildings.add(building);
+        buildings.add(new Building(context, screenX, screenY, screenX/2, (float)(screenY*.15)));
 
         gameOverStart = 0;
+    }
+
+    public void prepareLevel() {
+
     }
 
     @Override
@@ -158,8 +150,8 @@ public class GameView extends SurfaceView implements Runnable {
                 circleXPosition = pointerXPosition;
                 circleYPosition = pointerYPosition;
             } else {
-                circleXPosition = (float)(circleXPosition + 100*Math.cos(theta));
-                circleYPosition = (float) (circleYPosition + 100*Math.sin(theta));
+                circleXPosition = (float)(circleXPosition + (screenX/14)*Math.cos(theta));
+                circleYPosition = (float) (circleYPosition + (screenX/14)*Math.sin(theta));
             }
 
             tornado.update(fps, circleXPosition, circleYPosition, this.getWidth(), this.getHeight());
@@ -187,11 +179,11 @@ public class GameView extends SurfaceView implements Runnable {
             //sets paint color
             paint.setColor(Color.argb(255,153,153,153));
             //draws circle
-            canvas.drawCircle((float) (this.getWidth()*0.85), (float) (this.getHeight()*0.75), 100, paint);
+            canvas.drawCircle((float) (this.getWidth()*0.85), (float) (this.getHeight()*0.75), screenX/14, paint);
             //updates paint color
             paint.setColor(Color.argb(255, 255, 255, 255));
             //draws other circle
-            canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 60, paint);
+            canvas.drawCircle((float)circleXPosition, (float)circleYPosition, screenX/25, paint);
             //draw a tornado bitmap
             canvas.drawBitmap(tornado.getBitmap(), tornado.getX(), tornado.getY(), paint);
             //draw building if visible
