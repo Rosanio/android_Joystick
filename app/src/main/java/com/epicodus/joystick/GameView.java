@@ -1,6 +1,8 @@
 package com.epicodus.joystick;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,6 +14,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
+import java.util.Date;
+
 /**
  * Created by Guest on 5/12/16.
  */
@@ -22,6 +27,7 @@ public class GameView extends SurfaceView implements Runnable {
     SurfaceHolder ourHolder;
     //the declaration volatile allows this boolean to be user both inside and outside the thread, which I imagine is very useful.
     volatile boolean playing;
+    Context mContext;
     Canvas canvas;
     Paint paint;
     long fps;
@@ -60,11 +66,15 @@ public class GameView extends SurfaceView implements Runnable {
     Tornado tornado;
     Building building;
     boolean isExploding;
+    ArrayList<Building> buildings = new ArrayList<>();
+    boolean gameOver;
+    long gameOverStart;
 
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
         super(context);
         //initialize ourHolder and paint
+        mContext = context;
         ourHolder = getHolder();
         paint = new Paint();
         screenX = x;
@@ -93,7 +103,13 @@ public class GameView extends SurfaceView implements Runnable {
         explosionFrame = 1;
 
         tornado = new Tornado(context, screenX, screenY);
-        building = new Building(screenX, screenY);
+
+        building = new Building(context, screenX, screenY, screenX/2, (float)(screenY*.15));
+        buildings.add(new Building(context, screenX, screenY, (float)(screenX*.7), (float)(screenY*.15)));
+        buildings.add(new Building(context, screenX, screenY, (float)(screenX/4), (float)(screenY*.15)));
+        buildings.add(building);
+
+        gameOverStart = 0;
     }
 
     @Override
@@ -107,6 +123,23 @@ public class GameView extends SurfaceView implements Runnable {
             if(timeThisFrame > 0) {
                 //This line is pretty much 1000ms/1s * 1 frame/timeThisFrame ms, thus getting us the frames per second
                 fps = 1000 / timeThisFrame;
+            }
+            int counter = 0;
+            for(int i = 0; i < buildings.size(); i++) {
+                if(!buildings.get(i).getVisibility()) {
+                    counter ++;
+                }
+            }
+            if(counter == buildings.size() && gameOverStart == 0) {
+                gameOver = true;
+                gameOverStart = System.currentTimeMillis();
+            }
+
+            if(gameOver) {
+                if(System.currentTimeMillis()-gameOverStart > 5000) {
+                    Intent intent = new Intent(mContext, JoystickActivity.class);
+                    mContext.startActivity(intent);
+                }
             }
         }
     }
@@ -134,8 +167,13 @@ public class GameView extends SurfaceView implements Runnable {
             pointerXPosition = this.getWidth()/2;
             pointerYPosition = this.getHeight()/2;
         }
-        if(RectF.intersects(tornado.getRect(), building.getRect())) {
-            isExploding = true;
+        for(int i = 0; i < buildings.size(); i++ ) {
+            if(RectF.intersects(tornado.getRect(), buildings.get(i).getRect())) {
+                if(buildings.get(i).getVisibility()) {
+                    buildings.get(i).setExploding(true);
+                }
+                buildings.get(i).setInvisible();
+            }
         }
     }
 
@@ -153,45 +191,55 @@ public class GameView extends SurfaceView implements Runnable {
             //updates paint color
             paint.setColor(Color.argb(255, 255, 255, 255));
             //draws other circle
-            canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
+            canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 60, paint);
             //draw a tornado bitmap
             canvas.drawBitmap(tornado.getBitmap(), tornado.getX(), tornado.getY(), paint);
-            canvas.drawBitmap(buildingBitmap, building.getX(), building.getY(), paint);
-            //draw animated explosion
-            if(isExploding) {
-                if(explosionFrame == 1) {
-                    canvas.drawBitmap(explosion1, -screenX/8, (screenY/5), paint);
-                }  else if(explosionFrame == 2) {
-                    canvas.drawBitmap(explosion2, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 3) {
-                    canvas.drawBitmap(explosion3, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 4) {
-                    canvas.drawBitmap(explosion4, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 5) {
-                    canvas.drawBitmap(explosion5, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 6) {
-                    canvas.drawBitmap(explosion6, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 7) {
-                    canvas.drawBitmap(explosion7, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 8) {
-                    canvas.drawBitmap(explosion8, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 9) {
-                    canvas.drawBitmap(explosion9, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 10) {
-                    canvas.drawBitmap(explosion10, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 11) {
-                    canvas.drawBitmap(explosion11, -screenX/8, (screenY/5), paint);
-                } else if(explosionFrame == 12) {
-                    canvas.drawBitmap(explosion12, -screenX/8, (screenY/5), paint);
-                } else {
-                    isExploding = false;
-                    explosionFrame = 0;
+            //draw building if visible
+            for(int i = 0; i < buildings.size(); i++) {
+                if(buildings.get(i).getVisibility()) {
+                    canvas.drawBitmap(buildings.get(i).getBitmap(), buildings.get(i).getX(), buildings.get(i).getY(), paint);
                 }
-                explosionFrame++;
+                //draw animated explosion
+
+                if(buildings.get(i).isExploding()) {
+                    generateExplosion(buildings.get(i));
+                }
             }
             //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
             ourHolder.unlockCanvasAndPost(canvas);
         }
+    }
+
+    public void generateExplosion(Building building) {
+        if(explosionFrame == 1) {
+            canvas.drawBitmap(explosion1, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        }  else if(explosionFrame == 2) {
+            canvas.drawBitmap(explosion2, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 3) {
+            canvas.drawBitmap(explosion3, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 4) {
+            canvas.drawBitmap(explosion4, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 5) {
+            canvas.drawBitmap(explosion5, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 6) {
+            canvas.drawBitmap(explosion6, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 7) {
+            canvas.drawBitmap(explosion7, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 8) {
+            canvas.drawBitmap(explosion8, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 9) {
+            canvas.drawBitmap(explosion9, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 10) {
+            canvas.drawBitmap(explosion10, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 11) {
+            canvas.drawBitmap(explosion11, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else if(explosionFrame == 12) {
+            canvas.drawBitmap(explosion12, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+        } else {
+            building.setExploding(false);
+            explosionFrame = 0;
+        }
+        explosionFrame++;
     }
 
     public void pause() {
