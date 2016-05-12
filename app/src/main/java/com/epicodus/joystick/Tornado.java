@@ -51,8 +51,8 @@ public class Tornado {
     }
 
     public void update(long fps, float circleXPosition, float circleYPosition, float screenWidth, float screenHeight) {
-        xVel = (circleXPosition - (float) (screenWidth*0.85))/(screenWidth/600);
-        yVel = (circleYPosition - (float) (screenHeight*0.75))/(screenWidth/600);
+        xVel = (circleXPosition - (float) (screenWidth*0.85))/(screenWidth/300);
+        yVel = (circleYPosition - (float) (screenHeight*0.75))/(screenWidth/300);
         x = x +xVel;
         y = y + yVel;
 

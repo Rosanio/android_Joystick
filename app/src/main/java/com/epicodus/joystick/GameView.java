@@ -65,6 +65,7 @@ public class GameView extends SurfaceView implements Runnable {
     RectF screenRect;
     float arrowStartX;
     float arrowStartY;
+    ArrayList<Blackhole> blackholes = new ArrayList<>();
 
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
@@ -111,6 +112,8 @@ public class GameView extends SurfaceView implements Runnable {
         buildings.add(new Building(mContext, screenX, screenY, (float)(screenX*0.25), (float)(screenY*.35)));
 
         gameOverStart = 0;
+
+        blackholes.add(new Blackhole(mContext, screenX, screenY, (float)(screenX/2.5), screenY/2));
     }
 
     @Override
@@ -175,6 +178,11 @@ public class GameView extends SurfaceView implements Runnable {
                 buildings.get(i).setInvisible();
             }
         }
+//        for(int i = 0; i < blackholes.size(); i ++) {
+//            if(RectF.intersects(tornado.getRect(), blackholes.get(i).getRect())) {
+//                prepareLevel();
+//            }
+//        }
         if(!screenRect.contains(tornado.getRect())) {
             if(tornado.getX() < 0) {
                 arrowStartX = 0;
@@ -212,6 +220,9 @@ public class GameView extends SurfaceView implements Runnable {
             //draw a tornado bitmap
             canvas.drawBitmap(tornado.getBitmap(), tornado.getX(), tornado.getY(), paint);
             //draw building if visible
+            for(int i = 0; i < blackholes.size(); i++) {
+            canvas.drawBitmap(blackholes.get(i).getBitmap(), blackholes.get(i).getX(), blackholes.get(i).getY(), paint);
+            }
             for(int i = 0; i < buildings.size(); i++) {
                 if(buildings.get(i).getVisibility()) {
                     canvas.drawBitmap(buildings.get(i).getBitmap(), buildings.get(i).getX(), buildings.get(i).getY(), paint);
