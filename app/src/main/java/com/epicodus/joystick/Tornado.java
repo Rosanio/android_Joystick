@@ -23,10 +23,10 @@ public class Tornado {
     float yVel;
 
     public Tornado(Context context, float screenX, float screenY) {
-        x = (float)(screenX*1.4);
-        y = screenY/20;
-        width = screenX/8;
-        height = (float)(screenY/6);
+        x = (float)(screenX*0.8);
+        y = screenY/5;
+        width = screenX/12;
+        height = (float)(screenY/4);
         xVel = 0;
         yVel = 0;
         rect = new RectF();

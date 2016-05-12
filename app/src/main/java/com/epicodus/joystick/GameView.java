@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -61,6 +62,9 @@ public class GameView extends SurfaceView implements Runnable {
     ArrayList<Building> buildings = new ArrayList<>();
     boolean gameOver;
     long gameOverStart;
+    RectF screenRect;
+    float arrowStartX;
+    float arrowStartY;
 
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
@@ -90,18 +94,23 @@ public class GameView extends SurfaceView implements Runnable {
 
         explosionFrame = 1;
 
+        screenRect = new RectF(0, 0, screenX, screenY);
+
         //initialize tornado and building objects
-        tornado = new Tornado(context, screenX, screenY);
-
-        buildings.add(new Building(context, screenX, screenY, (float)(screenX*.7), (float)(screenY*.15)));
-        buildings.add(new Building(context, screenX, screenY, (float)(screenX/4), (float)(screenY*.15)));
-        buildings.add(new Building(context, screenX, screenY, screenX/2, (float)(screenY*.15)));
-
-        gameOverStart = 0;
+        prepareLevel();
     }
 
     public void prepareLevel() {
+        gameOver = false;
+        tornado = new Tornado(mContext, screenX, screenY);
 
+        buildings.clear();
+
+        buildings.add(new Building(mContext, screenX, screenY, (float)(screenX*.1), (float)(screenY*.35)));
+        buildings.add(new Building(mContext, screenX, screenY, (float)(screenX/2), (float)(screenY*.35)));
+        buildings.add(new Building(mContext, screenX, screenY, (float)(screenX*0.25), (float)(screenY*.35)));
+
+        gameOverStart = 0;
     }
 
     @Override
@@ -129,8 +138,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             if(gameOver) {
                 if(System.currentTimeMillis()-gameOverStart > 5000) {
-                    Intent intent = new Intent(mContext, JoystickActivity.class);
-                    mContext.startActivity(intent);
+                    prepareLevel();
                 }
             }
         }
@@ -167,11 +175,28 @@ public class GameView extends SurfaceView implements Runnable {
                 buildings.get(i).setInvisible();
             }
         }
+        if(!screenRect.contains(tornado.getRect())) {
+            if(tornado.getX() < 0) {
+                arrowStartX = 0;
+            } else if(tornado.getX() > screenX) {
+                arrowStartX = screenX;
+            } else {
+                arrowStartX = tornado.getX();
+            }
+            if(tornado.getY() > screenY) {
+                arrowStartY = screenY-screenY/10;
+            } else if(tornado.getY() < 0) {
+                arrowStartY = 0 + 25;
+            } else {
+                arrowStartY = tornado.getY();
+            }
+        }
     }
 
     public void draw() {
         //Make sure surface is valid, dont know what this means but program crashes if you don't
         if(ourHolder.getSurface().isValid()) {
+            paint.setStyle(Paint.Style.STROKE);
             //this locks the drawing surface, and sets the canvas equal to the drawing surface
             canvas = ourHolder.lockCanvas();
             //sets background color
@@ -192,9 +217,20 @@ public class GameView extends SurfaceView implements Runnable {
                     canvas.drawBitmap(buildings.get(i).getBitmap(), buildings.get(i).getX(), buildings.get(i).getY(), paint);
                 }
                 //draw animated explosion
-
                 if(buildings.get(i).isExploding()) {
                     generateExplosion(buildings.get(i));
+                }
+            }
+            if(!screenRect.contains(tornado.getRect())) {
+                //draw an arrow
+                if(tornado.getX() < 0) {
+                    drawLeftArrow(arrowStartX, arrowStartY);
+                } else if(tornado.getX() > screenX) {
+                    drawRightArrow(arrowStartX, arrowStartY);
+                } else if(tornado.getY() > screenY) {
+                    drawDownArrow(arrowStartX, arrowStartY);
+                } else if(tornado.getY() < 0) {
+                    drawUpArrow(arrowStartX, arrowStartY);
                 }
             }
             //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
@@ -204,34 +240,78 @@ public class GameView extends SurfaceView implements Runnable {
 
     public void generateExplosion(Building building) {
         if(explosionFrame == 1) {
-            canvas.drawBitmap(explosion1, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion1, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         }  else if(explosionFrame == 2) {
-            canvas.drawBitmap(explosion2, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion2, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 3) {
-            canvas.drawBitmap(explosion3, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion3, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 4) {
-            canvas.drawBitmap(explosion4, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion4, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 5) {
-            canvas.drawBitmap(explosion5, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion5, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 6) {
-            canvas.drawBitmap(explosion6, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion6, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 7) {
-            canvas.drawBitmap(explosion7, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion7, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 8) {
-            canvas.drawBitmap(explosion8, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion8, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 9) {
-            canvas.drawBitmap(explosion9, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion9, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 10) {
-            canvas.drawBitmap(explosion10, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion10, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 11) {
-            canvas.drawBitmap(explosion11, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion11, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else if(explosionFrame == 12) {
-            canvas.drawBitmap(explosion12, (float)(building.getX()-200), (float)(building.getY()*1.8), paint);
+            canvas.drawBitmap(explosion12, (float)(building.getX()-420), (float)(building.getY()*1.5), paint);
         } else {
             building.setExploding(false);
             explosionFrame = 0;
         }
         explosionFrame++;
+    }
+
+    public void drawLeftArrow(float arrowStartX, float arrowStartY) {
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(255, 255, 192, 203));
+        Path path = new Path();
+        path.moveTo(arrowStartX, arrowStartY);
+        path.lineTo(arrowStartX+50, arrowStartY-50);
+        path.lineTo(arrowStartX+50, arrowStartY+50);
+        path.close();
+        canvas.drawPath(path, paint);
+    }
+
+    public void drawRightArrow(float arrowStartX, float arrowStartY) {
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(255, 255, 192, 203));
+        Path path = new Path();
+        path.moveTo(arrowStartX, arrowStartY);
+        path.lineTo(arrowStartX-50, arrowStartY+50);
+        path.lineTo(arrowStartX-50, arrowStartY-50);
+        path.close();
+        canvas.drawPath(path, paint);
+    }
+
+    public void drawDownArrow(float arrowStartX, float arrowStartY) {
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(255, 255, 192, 203));
+        Path path = new Path();
+        path.moveTo(arrowStartX, arrowStartY);
+        path.lineTo(arrowStartX-50, arrowStartY-50);
+        path.lineTo(arrowStartX+50, arrowStartY-50);
+        path.close();
+        canvas.drawPath(path, paint);
+    }
+
+    public void drawUpArrow(float arrowStartX, float arrowStartY) {
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(255, 255, 192, 203));
+        Path path = new Path();
+        path.moveTo(arrowStartX, arrowStartY);
+        path.lineTo(arrowStartX-50, arrowStartY+50);
+        path.lineTo(arrowStartX+50, arrowStartY+50);
+        path.close();
+        canvas.drawPath(path, paint);
     }
 
     public void pause() {

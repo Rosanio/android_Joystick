@@ -20,8 +20,8 @@ public class Building {
     boolean isExploding;
 
     public Building(Context context, float screenX, float screenY, float x, float y) {
-        float width = screenX/8;
-        float height = screenY/4;
+        float width = screenX/13;
+        float height = (float)(screenY*0.4);
         this.x = x;
         this.y = y;
 
