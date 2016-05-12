@@ -30,8 +30,8 @@ public class GameView extends SurfaceView implements Runnable {
     float circleYPosition;
     float pointerXPosition;
     float pointerYPosition;
-    float rectXPosition = this.getWidth()/2;
-    float rectYPosition = this.getHeight()/4;
+    float rectXPosition;
+    float rectYPosition;
     float rectWidth;
     float rectHeight;
     float rectXVel;
@@ -69,7 +69,7 @@ public class GameView extends SurfaceView implements Runnable {
         paint = new Paint();
         screenX = x;
         screenY = y;
-        rectXPosition = screenX/2;
+        rectXPosition = (float)(screenX*0.9);
         rectYPosition = screenY/4;
         rectWidth = 25;
         rectHeight = 25;
@@ -92,7 +92,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         explosionFrame = 1;
 
-        tornado = new Tornado(context, rectXPosition, rectYPosition);
+        tornado = new Tornado(context, screenX, screenY);
         building = new Building(screenX, screenY);
     }
 
@@ -113,11 +113,11 @@ public class GameView extends SurfaceView implements Runnable {
 
     public void update() {
         //This could be where some code goes to detect if the screen is being touched, and if so get the current position of the users finger and update the center of the circle to that location.
-        circleXPosition = this.getWidth()/2;
-        circleYPosition = this.getHeight()/2;
+        circleXPosition = (float) (this.getWidth()*0.85);
+        circleYPosition = (float) (this.getHeight()*0.75);
         if(isBeingTouched) {
-            deltaX = pointerXPosition-this.getWidth()/2;
-            deltaY = pointerYPosition - this.getHeight()/2;
+            deltaX = pointerXPosition-circleXPosition;
+            deltaY = pointerYPosition - circleYPosition;
             distance = (float) Math.sqrt((deltaX*deltaX) + (deltaY*deltaY));
             theta = (float) Math.atan2(deltaY,deltaX);
 
@@ -125,8 +125,8 @@ public class GameView extends SurfaceView implements Runnable {
                 circleXPosition = pointerXPosition;
                 circleYPosition = pointerYPosition;
             } else {
-                circleXPosition = (float)(this.getWidth()/2 + 100*Math.cos(theta));
-                circleYPosition = (float) (this.getHeight()/2 + 100*Math.sin(theta));
+                circleXPosition = (float)(circleXPosition + 100*Math.cos(theta));
+                circleYPosition = (float) (circleYPosition + 100*Math.sin(theta));
             }
 
             tornado.update(fps, circleXPosition, circleYPosition, this.getWidth(), this.getHeight());
@@ -149,40 +149,40 @@ public class GameView extends SurfaceView implements Runnable {
             //sets paint color
             paint.setColor(Color.argb(255,153,153,153));
             //draws circle
-            canvas.drawCircle(this.getWidth()/2, this.getHeight()/2, 100, paint);
+            canvas.drawCircle((float) (this.getWidth()*0.85), (float) (this.getHeight()*0.75), 100, paint);
             //updates paint color
             paint.setColor(Color.argb(255, 255, 255, 255));
             //draws other circle
             canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
             //draw a tornado bitmap
             canvas.drawBitmap(tornado.getBitmap(), tornado.getX(), tornado.getY(), paint);
-            canvas.drawBitmap(buildingBitmap, screenX/2, (float) (0.6*screenY),paint);
+            canvas.drawBitmap(buildingBitmap, building.getX(), building.getY(), paint);
             //draw animated explosion
             if(isExploding) {
                 if(explosionFrame == 1) {
-                    canvas.drawBitmap(explosion1, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion1, -screenX/8, (screenY/5), paint);
                 }  else if(explosionFrame == 2) {
-                    canvas.drawBitmap(explosion2, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion2, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 3) {
-                    canvas.drawBitmap(explosion3, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion3, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 4) {
-                    canvas.drawBitmap(explosion4, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion4, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 5) {
-                    canvas.drawBitmap(explosion5, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion5, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 6) {
-                    canvas.drawBitmap(explosion6, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion6, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 7) {
-                    canvas.drawBitmap(explosion7, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion7, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 8) {
-                    canvas.drawBitmap(explosion8, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion8, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 9) {
-                    canvas.drawBitmap(explosion9, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion9, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 10) {
-                    canvas.drawBitmap(explosion10, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion10, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 11) {
-                    canvas.drawBitmap(explosion11, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion11, -screenX/8, (screenY/5), paint);
                 } else if(explosionFrame == 12) {
-                    canvas.drawBitmap(explosion12, screenX/5, (float)(0.68*screenY), paint);
+                    canvas.drawBitmap(explosion12, -screenX/8, (screenY/5), paint);
                 } else {
                     isExploding = false;
                     explosionFrame = 0;

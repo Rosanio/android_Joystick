@@ -15,8 +15,8 @@ public class Building {
     private boolean isVisible;
 
     public Building(float screenX, float screenY) {
-        x = screenX/2;
-        y = (float)(screenY*0.6);
+        x = screenX/7;
+        y = (float)(screenY/10);
         width = screenX/8;
         height = screenY;
 
@@ -25,6 +25,14 @@ public class Building {
 
     public RectF getRect() {
         return rect;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getX() {
+        return x;
     }
 
     public void setInvisible() {

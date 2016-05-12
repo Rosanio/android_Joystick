@@ -24,7 +24,7 @@ public class JoystickActivity extends Activity {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        gameView = new GameView(this, size.x, size.y);
+        gameView = new GameView(this, size.y, size.x);
         setContentView(gameView);
     }
 
