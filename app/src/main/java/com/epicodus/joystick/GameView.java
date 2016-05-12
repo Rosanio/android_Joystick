@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -42,7 +43,23 @@ public class GameView extends SurfaceView implements Runnable {
     boolean isBeingTouched = false;
     float screenX;
     float screenY;
-    Bitmap tornadoBitmap;
+    Bitmap buildingBitmap;
+    Bitmap explosion1;
+    Bitmap explosion2;
+    Bitmap explosion3;
+    Bitmap explosion4;
+    Bitmap explosion5;
+    Bitmap explosion6;
+    Bitmap explosion7;
+    Bitmap explosion8;
+    Bitmap explosion9;
+    Bitmap explosion10;
+    Bitmap explosion11;
+    Bitmap explosion12;
+    int explosionFrame;
+    Tornado tornado;
+    Building building;
+    boolean isExploding;
 
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
@@ -59,7 +76,24 @@ public class GameView extends SurfaceView implements Runnable {
         rectXVel = 0;
         rectYVel = 0;
 
-        tornadoBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.tornado);
+        buildingBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.building);
+        explosion1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion1);
+        explosion2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion2);
+        explosion3 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion3);
+        explosion4 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion4);
+        explosion5 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion5);
+        explosion6 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion6);
+        explosion7 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion7);
+        explosion8 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion8);
+        explosion9 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion9);
+        explosion10 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion10);
+        explosion11 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion11);
+        explosion12 = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion12);
+
+        explosionFrame = 1;
+
+        tornado = new Tornado(context, rectXPosition, rectYPosition);
+        building = new Building(screenX, screenY);
     }
 
     @Override
@@ -94,23 +128,18 @@ public class GameView extends SurfaceView implements Runnable {
                 circleXPosition = (float)(this.getWidth()/2 + 100*Math.cos(theta));
                 circleYPosition = (float) (this.getHeight()/2 + 100*Math.sin(theta));
             }
-            rectXVel = (circleXPosition - this.getWidth()/2)/8;
-            rectYVel = (circleYPosition - this.getHeight()/2)/8;
-            rectXPosition = rectXPosition + rectXVel;
-            rectYPosition = rectYPosition + rectYVel;
+
+            tornado.update(fps, circleXPosition, circleYPosition, this.getWidth(), this.getHeight());
         } else {
             pointerXPosition = this.getWidth()/2;
             pointerYPosition = this.getHeight()/2;
         }
+        if(RectF.intersects(tornado.getRect(), building.getRect())) {
+            isExploding = true;
+        }
     }
 
     public void draw() {
-        //initialize some variables
-        float startX = rectXPosition;
-        float startY = (float) 0.75*screenY;
-        float stopX;
-        float stopY;
-        float angle;
         //Make sure surface is valid, dont know what this means but program crashes if you don't
         if(ourHolder.getSurface().isValid()) {
             //this locks the drawing surface, and sets the canvas equal to the drawing surface
@@ -126,7 +155,40 @@ public class GameView extends SurfaceView implements Runnable {
             //draws other circle
             canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
             //draw a tornado bitmap
-            canvas.drawBitmap(tornadoBitmap, rectXPosition, rectYPosition, paint);
+            canvas.drawBitmap(tornado.getBitmap(), tornado.getX(), tornado.getY(), paint);
+            canvas.drawBitmap(buildingBitmap, screenX/2, (float) (0.6*screenY),paint);
+            //draw animated explosion
+            if(isExploding) {
+                if(explosionFrame == 1) {
+                    canvas.drawBitmap(explosion1, screenX/5, (float)(0.68*screenY), paint);
+                }  else if(explosionFrame == 2) {
+                    canvas.drawBitmap(explosion2, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 3) {
+                    canvas.drawBitmap(explosion3, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 4) {
+                    canvas.drawBitmap(explosion4, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 5) {
+                    canvas.drawBitmap(explosion5, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 6) {
+                    canvas.drawBitmap(explosion6, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 7) {
+                    canvas.drawBitmap(explosion7, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 8) {
+                    canvas.drawBitmap(explosion8, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 9) {
+                    canvas.drawBitmap(explosion9, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 10) {
+                    canvas.drawBitmap(explosion10, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 11) {
+                    canvas.drawBitmap(explosion11, screenX/5, (float)(0.68*screenY), paint);
+                } else if(explosionFrame == 12) {
+                    canvas.drawBitmap(explosion12, screenX/5, (float)(0.68*screenY), paint);
+                } else {
+                    isExploding = false;
+                    explosionFrame = 0;
+                }
+                explosionFrame++;
+            }
             //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
             ourHolder.unlockCanvasAndPost(canvas);
         }
