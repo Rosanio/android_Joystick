@@ -1,6 +1,8 @@
 package com.epicodus.joystick;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -40,6 +42,7 @@ public class GameView extends SurfaceView implements Runnable {
     boolean isBeingTouched = false;
     float screenX;
     float screenY;
+    Bitmap tornadoBitmap;
 
     public GameView(Context context, float x, float y) {
         //Apparently this line asks the SurfaceView class to setup our object for us, whatever that means.
@@ -55,6 +58,8 @@ public class GameView extends SurfaceView implements Runnable {
         rectHeight = 25;
         rectXVel = 0;
         rectYVel = 0;
+
+        tornadoBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.tornado);
     }
 
     @Override
@@ -100,6 +105,12 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     public void draw() {
+        //initialize some variables
+        float startX = rectXPosition;
+        float startY = (float) 0.75*screenY;
+        float stopX;
+        float stopY;
+        float angle;
         //Make sure surface is valid, dont know what this means but program crashes if you don't
         if(ourHolder.getSurface().isValid()) {
             //this locks the drawing surface, and sets the canvas equal to the drawing surface
@@ -114,8 +125,8 @@ public class GameView extends SurfaceView implements Runnable {
             paint.setColor(Color.argb(255, 255, 255, 255));
             //draws other circle
             canvas.drawCircle((float)circleXPosition, (float)circleYPosition, 50, paint);
-            //draw rectangle
-            canvas.drawRect(rectXPosition + rectWidth/2, rectYPosition - rectHeight/2, rectXPosition - rectWidth/2, rectYPosition + rectHeight/2, paint);
+            //draw a tornado bitmap
+            canvas.drawBitmap(tornadoBitmap, rectXPosition, rectYPosition, paint);
             //unlocks the canvas, which i think means the OS can draw to it again. It also posts what we've drawn to the actual screen, i think.
             ourHolder.unlockCanvasAndPost(canvas);
         }
